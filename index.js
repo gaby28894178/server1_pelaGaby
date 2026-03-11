@@ -10,13 +10,10 @@ app.use(express.static(join(__dirname,'public')));
 
 const PORT = process.env.PORT || 3000
 
-// 👈 Esta ruta es la que faltaba
+
 app.get('/', (req, res) => {
-    res.send('Servidor funcionando correctamente');
+    res.send('Servidor funcionando correctamente welcome');
 });
-
-
-
 
 app.listen(PORT,()=>{
   console.log(`Servidor en http://localhost:${PORT}`)
