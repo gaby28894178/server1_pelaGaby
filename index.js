@@ -15,6 +15,12 @@ app.get('/', (req, res) => {
     res.send('Servidor funcionando correctamente welcome');
 });
 
+app.get('/ping',(req,res)=>{
+  res.json({
+    msj:"backend  ok"
+  })
+})
+
 app.listen(PORT,()=>{
   console.log(`Servidor en http://localhost:${PORT}`)
 })
