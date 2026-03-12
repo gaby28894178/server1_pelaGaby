@@ -25,24 +25,21 @@ app.use(express.static(publicPath));
 
 // Inicializar base de datos
 const initDB = async () => {
-  try {
-    await testConnection();
-    
-    // Solo sincronizar en desarrollo local
-    if (process.env.NODE_ENV !== 'production') {
+  // Solo en desarrollo local con DATABASE_URL
+  if (process.env.NODE_ENV !== 'production' && process.env.DATABASE_URL) {
+    try {
+      await testConnection();
       await syncDatabase();
+      console.log("✅ Base de datos lista");
+    } catch (err) {
+      console.error("⚠️ Error inicializando base de datos:", err.message);
     }
-    
-    console.log("✅ Base de datos lista");
-  } catch (err) {
-    console.error("⚠️ Error inicializando base de datos:", err.message);
+  } else {
+    console.log("ℹ️ Modo producción o sin DB - saltando inicialización");
   }
 };
 
-// Solo inicializar DB en desarrollo local
-if (process.env.NODE_ENV !== 'production') {
-  initDB();
-}
+initDB();
 
 // Rutas API
 app.use('/api/users', userRoutes);

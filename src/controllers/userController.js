@@ -9,6 +9,14 @@ export const register = async (req, res) => {
   const { nombre, apellido, email, password, telefono, edad } = req.body;
   
   try {
+    // Verificar si hay conexión a DB
+    if (!process.env.DATABASE_URL) {
+      return res.status(503).json({ 
+        error: "Base de datos no configurada",
+        message: "Configura DATABASE_URL en las variables de entorno"
+      });
+    }
+
     // Verificar si el email ya existe
     const existingUser = await User.findOne({ where: { email } });
     if (existingUser) {
