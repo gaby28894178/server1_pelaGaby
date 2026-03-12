@@ -4,75 +4,56 @@ import helmet from 'helmet';
 import { resolve } from 'path';
 import 'dotenv/config';
 
-// Importar configuración de base de datos
 import { testConnection } from './config/database.js';
 import { syncDatabase } from './models/index.js';
-
-// Importar rutas
 import userRoutes from './routes/userRoutes.js';
 
 const app = express();
 
-// Middlewares globales
-app.use(helmet());
+// Middlewares
+app.use(helmet({ contentSecurityPolicy: false })); // CSP a veces bloquea scripts en Vercel
 app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// Carpeta pública
 const publicPath = resolve(process.cwd(), 'public');
 app.use(express.static(publicPath));
 
-// Inicializar base de datos
+// Inicializar base de datos - QUITAMOS EL IF DE PRODUCTION
+// Queremos que conecte siempre, tanto en local como en Vercel
 const initDB = async () => {
-  // Solo en desarrollo local con DATABASE_URL
-  if (process.env.NODE_ENV !== 'production' && process.env.DATABASE_URL) {
-    try {
-      await testConnection();
-      await syncDatabase();
-      console.log("✅ Base de datos lista");
-    } catch (err) {
-      console.error("⚠️ Error inicializando base de datos:", err.message);
-    }
-  } else {
-    console.log("ℹ️ Modo producción o sin DB - saltando inicialización");
+  try {
+    await testConnection();
+    // syncDatabase() puede ser pesado en Serverless, 
+    // pero si lo necesitas para crear tablas, déjalo.
+    await syncDatabase(); 
+    console.log("✅ Base de datos conectada");
+  } catch (err) {
+    console.error("⚠️ Error DB:", err.message);
   }
 };
 
 initDB();
 
-// Rutas API
+// Rutas
 app.use('/api/users', userRoutes);
 
-// Ruta principal
 app.get('/', (req, res) => {
   res.sendFile(resolve(publicPath, 'index.html'));
 });
 
-app.get('/test', (req, res) => {
-  res.json({ 
-    status: 'ok',
-    message: 'Backend funcionando correctamente',
-    timestamp: new Date().toISOString()
-  });
-});
-
-// Manejo de errores global
+// Manejo de errores
 app.use((err, req, res, next) => {
-  console.error(err.stack);
   res.status(err.status || 500).json({
     status: 'error',
-    message: err.message || 'Error interno del servidor'
+    message: err.message || ' Internal Server Error'
   });
 });
 
-// Exportar para Vercel
 export default app;
 
-// Servidor local
-const PORT = process.env.PORT || 3000;
+// Solo para local
 if (process.env.NODE_ENV !== 'production') {
-  app.listen(PORT, () => {
-    console.log(`\n🚀 Servidor corriendo en http://localhost:${PORT}`);
-  });
+  const PORT = process.env.PORT || 3000;
+  app.listen(PORT, () => console.log(`🚀 Servidor en http://localhost:${PORT}`));
 }
