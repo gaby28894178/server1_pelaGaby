@@ -20,7 +20,7 @@ app.get('/', (req, res) => {
     res.send('Servidor funcionando correctamente welcome');
 });
 
-app.get('/ping', (req, res) => {
+app.get('/test', (req, res) => {
     res.json({
         msj: "backend ok"
     });
