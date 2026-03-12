@@ -1,50 +1,73 @@
 import express from 'express';
 import cors from 'cors';
+import helmet from 'helmet';
 import { resolve } from 'path';
 import 'dotenv/config';
 
-// Importamos solo lo que necesitamos
+// Importar configuración de base de datos
+import { testConnection } from './config/database.js';
+import { syncDatabase } from './models/index.js';
+
+// Importar rutas
 import userRoutes from './routes/userRoutes.js';
-import { setupUserTable } from './models/userModel.js';
 
 const app = express();
 
 // Middlewares globales
+app.use(helmet());
 app.use(cors());
 app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 
-// Carpeta pública (Funciona en Local y Vercel)
+// Carpeta pública
 const publicPath = resolve(process.cwd(), 'public');
 app.use(express.static(publicPath));
 
-// Inicializar la tabla de Usuarios (Solo usuarios)
+// Inicializar base de datos
 const initDB = async () => {
-    try {
-        await setupUserTable();
-        console.log("✅ Conexión a Postgres exitosa y tabla de usuarios lista.");
-    } catch (err) {
-        console.error("⚠️ Aviso: Revisa la conexión a Postgres en el .env:", err.message);
-    }
+  try {
+    await testConnection();
+    await syncDatabase();
+    console.log("✅ Base de datos lista");
+  } catch (err) {
+    console.error("⚠️ Error inicializando base de datos:", err.message);
+  }
 };
 
 initDB();
 
-// Rutas de Usuario
+// Rutas API
 app.use('/api/users', userRoutes);
 
-// Ruta principal para el Dashboard
+// Ruta principal
 app.get('/', (req, res) => {
   res.sendFile(resolve(publicPath, 'index.html'));
 });
-app.use("/test",(req,res)=>{
-    res.send("OKOPK")
-})
 
-// Esto permite que Vercel maneje la app como una función
+app.get('/test', (req, res) => {
+  res.json({ 
+    status: 'ok',
+    message: 'Backend funcionando correctamente',
+    timestamp: new Date().toISOString()
+  });
+});
+
+// Manejo de errores global
+app.use((err, req, res, next) => {
+  console.error(err.stack);
+  res.status(err.status || 500).json({
+    status: 'error',
+    message: err.message || 'Error interno del servidor'
+  });
+});
+
+// Exportar para Vercel
 export default app;
 
-// Esto arranca el servidor en tu computadora
+// Servidor local
 const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => {
-    console.log(`🚀 Servidor activo en: http://localhost:${PORT}`);
-});
+if (process.env.NODE_ENV !== 'production') {
+  app.listen(PORT, () => {
+    console.log(`\n🚀 Servidor corriendo en http://localhost:${PORT}`);
+  });
+}

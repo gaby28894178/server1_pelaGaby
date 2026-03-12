@@ -1,11 +1,17 @@
 import { Router } from 'express';
 import * as userCtrl from '../controllers/userController.js';
-import { protect } from '../middlewares/authMiddleware.js';
+import { verifyJwt } from '../middlewares/verifyJwt.js';
 
-const router = Router();
+const userRouter = Router();
 
-router.post('/register', userCtrl.register);
-router.post('/login', userCtrl.login);
-router.get('/profile', protect, userCtrl.getProfile); // Ruta protegida
+userRouter.route('/')
+    .get(verifyJwt, userCtrl.getAll) // PROTEGIDA - Ver todos los usuarios
+    .post(userCtrl.register);         // PÚBLICA - Registrar paciente
 
-export default router;
+userRouter.route('/login')
+    .post(userCtrl.login);            // PÚBLICA - Login
+
+userRouter.route('/profile')
+    .get(verifyJwt, userCtrl.getProfile); // PROTEGIDA - Ver perfil completo con pagos, turnos, etc.
+
+export default userRouter;
