@@ -24,7 +24,7 @@ const sequelize = new Sequelize(connectionString, {
   },
   dialectOptions: process.env.NODE_ENV === 'production' && process.env.DATABASE_URL ? {
     ssl: {
-      require: true,
+      require: false,
       rejectUnauthorized: false
     }
   } : {}
