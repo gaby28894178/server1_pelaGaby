@@ -9,9 +9,6 @@ const __dirname = dirname(__filename);
 
 const app = express();
 
-// 2. Middlewares 
-// Usamos path.resolve para asegurar que encuentre 'public' en Vercel
-app.use(express.static(join(__dirname, '../public'))); 
 
 const PORT = process.env.PORT || 3000;
 
@@ -20,11 +17,16 @@ app.get('/', (req, res) => {
     res.send('Servidor funcionando correctamente welcome');
 });
 
-app.get('/ping', (req, res) => {
+app.get('/test', (req, res) => {
     res.json({
         msj: "backend ok"
     });
 });
+
+// 2. Middlewares 
+// Usamos path.resolve para asegurar que encuentre 'public' en Vercel
+app.use(express.static(join(__dirname, '../public'))); 
+
 
 // 4. IMPORTANTE: app.listen() es opcional en Vercel, 
 // pero sirve para desarrollo local.
