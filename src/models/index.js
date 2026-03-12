@@ -10,8 +10,13 @@ import Analysis from './Analysis.js';
 // Sincronizar todos los modelos con la base de datos
 export const syncDatabase = async () => {
   try {
-    // force: true borra y recrea todas las tablas (CUIDADO: borra datos)
-    // alter: true intenta modificar las tablas existentes
+    // En producción (Vercel) NO sincronizar automáticamente
+    if (process.env.NODE_ENV === 'production') {
+      console.log('⚠️ Modo producción: sync deshabilitado');
+      return;
+    }
+    
+    // Solo en desarrollo local
     await sequelize.sync({ force: true }); 
     console.log('✅ Modelos sincronizados con la base de datos');
   } catch (error) {

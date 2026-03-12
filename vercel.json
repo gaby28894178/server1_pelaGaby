@@ -12,6 +12,14 @@
       "dest": "src/index.js"
     },
     {
+      "src": "/test",
+      "dest": "src/index.js"
+    },
+    {
+      "src": "/(.*\\.(css|js|png|jpg|jpeg|gif|svg|ico))",
+      "dest": "/$1"
+    },
+    {
       "src": "/(.*)",
       "dest": "src/index.js"
     }

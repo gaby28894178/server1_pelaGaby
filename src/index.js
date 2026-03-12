@@ -27,14 +27,22 @@ app.use(express.static(publicPath));
 const initDB = async () => {
   try {
     await testConnection();
-    await syncDatabase();
+    
+    // Solo sincronizar en desarrollo local
+    if (process.env.NODE_ENV !== 'production') {
+      await syncDatabase();
+    }
+    
     console.log("✅ Base de datos lista");
   } catch (err) {
     console.error("⚠️ Error inicializando base de datos:", err.message);
   }
 };
 
-initDB();
+// Solo inicializar DB en desarrollo local
+if (process.env.NODE_ENV !== 'production') {
+  initDB();
+}
 
 // Rutas API
 app.use('/api/users', userRoutes);

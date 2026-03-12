@@ -8,6 +8,7 @@
   "scripts": {
     "start": "node src/index.js",
     "dev": "nodemon src/index.js",
+    "migrate:vercel": "node scripts/migrate-vercel.js",
     "pretest": "npm run reset:migrate"  
   },
   "keywords": [],
