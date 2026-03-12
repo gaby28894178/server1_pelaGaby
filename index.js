@@ -1,40 +1,35 @@
 import express from 'express';
-import { join, dirname } from 'path';
-import { fileURLToPath } from 'url';
+import { resolve } from 'path';
 import 'dotenv/config';
-
-// 1. Configuración de rutas para ES Modules
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = dirname(__filename);
 
 const app = express();
 
+// process.cwd() obtiene la carpeta raíz de tu proyecto (donde está el package.json)
+const publicPath = resolve(process.cwd(), 'public');
 
-const PORT = process.env.PORT || 3000;
+// 1. Servir archivos estáticos (Para las imágenes)
+app.use(express.static(publicPath));
 
-// 3. Rutas de tu API
+// 2. Ruta principal
 app.get('/', (req, res) => {
-    res.send('Servidor funcionando correctamente welcome');
+    // Enviamos el HTML usando la ruta detectada
+    res.sendFile(resolve(publicPath, 'index.html'));
 });
 
 app.get('/test', (req, res) => {
-    res.json({
-        msj: "backend ok"
+    res.json({ 
+        msj: "backend ok",
+        donde_busco_el_html: resolve(publicPath, 'index.html'),
+        existe_la_carpeta: publicPath
     });
 });
 
-// 2. Middlewares 
-// Usamos path.resolve para asegurar que encuentre 'public' en Vercel
-app.use(express.static(join(__dirname, '../public'))); 
+export default app;
 
-
-// 4. IMPORTANTE: app.listen() es opcional en Vercel, 
-// pero sirve para desarrollo local.
+const PORT = process.env.PORT || 3000;
 if (process.env.NODE_ENV !== 'production') {
     app.listen(PORT, () => {
-        console.log(`Servidor local en http://localhost:${PORT}`);
+        console.log(`\n🚀 Servidor corriendo en http://localhost:${PORT}`);
+  
     });
 }
-
-// 5. ESTO ES LO QUE TE FALTABA: Exportar la app para Vercel
-export default app;

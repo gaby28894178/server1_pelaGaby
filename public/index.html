@@ -1,0 +1,466 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard - Clínica Premium</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        :root {
+            --primary-blue: #2c72b8;
+            --dark-blue: #1e5a96;
+            --light-blue: #4a90e2;
+            --celeste-claro: #add8e6;
+            --soft-blue: #4caef8;
+            --text-dark: #334e68;
+            --bg-glass: rgba(255, 255, 255, 0.9);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Roboto, sans-serif;
+            font-size: 1.1rem;
+        }
+
+        body {
+            background: url('img/background_web_.png') no-repeat center center fixed;
+            background-size: cover;
+            min-height: 100vh;
+            display: flex;
+            color: var(--text-dark);
+            overflow-x: hidden;
+        }
+
+        body.menu-open { overflow: hidden; }
+
+        .overlay {
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(3px);
+            z-index: 1500;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.4s ease;
+        }
+
+        .overlay.active { opacity: 1; visibility: visible; }
+
+        /* --- SIDEBAR (15% MÁS ANCHO: 320px → 368px) --- */
+        nav {
+            width: 368px;
+            background: url('img/background_web_.png');
+            background-size: cover;
+            background-position: center;
+            color: white;
+            display: flex;
+            flex-direction: column;
+            padding: 40px 0;
+            backdrop-filter: blur(15px);
+            box-shadow: 8px 0 25px rgba(0,0,0,0.3);
+            flex-shrink: 0;
+            transition: all 0.4s cubic-bezier(0.77, 0, 0.175, 1);
+            z-index: 2000;
+        }
+
+        .close-menu {
+            display: none;
+            position: absolute;
+            top: 20px; right: 20px;
+            font-size: 2.5rem; color: rgb(172, 172, 172);
+            background: none; border: none; cursor: pointer;
+        }
+
+        .logo-section {
+            text-align: center; font-size: 3rem;
+            margin-bottom: 30px; text-shadow: 0 4px 8px rgba(0,0,0,0.5);
+        }
+
+        .search-sidebar {
+            display: none;
+            padding: 0 20px 25px 20px;
+        }
+
+        /* Bloque de usuario dentro del nav (oculto por defecto) */
+        .user-info-nav {
+            display: none;
+            align-items: center;
+            justify-content: center;
+            gap: 15px;
+            padding: 20px;
+            margin: 10px 20px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 30px;
+            backdrop-filter: blur(5px);
+        }
+        .user-info-nav-content {
+            text-align: right;
+        }
+        .user-info-nav-content p:first-child {
+            font-weight: 700;
+        }
+        .user-info-nav-content p:last-child {
+            font-size: 0.8rem;
+            opacity: 0.6;
+        }
+        .user-info-nav-img {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            border: 3px solid white;
+        }
+
+        nav a {
+            color: rgb(94, 94, 97); text-decoration: none;
+            padding: 20px 30px; display: flex;
+            align-items: center; gap: 18px;
+            transition: all 0.3s ease; margin: 8px 20px;
+            border-radius: 18px; background: rgba(0, 0, 0, 0.25); 
+            text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+        }
+
+        nav a:hover, nav a.active {
+            background: rgba(255, 255, 255, 0.35);
+            transform: translateX(12px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+
+        .logout { border-top: 1px solid rgba(255,255,255,0.4); padding-top: 30px; margin-top: auto; }
+
+        /* --- MAIN CONTENT --- */
+        main {
+            flex: 1; padding: 50px;
+            background: rgba(232, 241, 248, 0.2);
+            max-width: 100%;
+        }
+
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 50px;
+            gap: 25px;
+            flex-wrap: wrap;
+        }
+
+        .menu-btn {
+            display: none;
+            font-size: 3.5rem;
+            padding: 10px;
+            width: 3%;
+            background: none; border: none;
+            color: var(--dark-blue); cursor: pointer;
+        }
+
+        .search-bar {
+            background: white; padding: 15px 30px;
+            border-radius: 40px;
+            flex: 1 1 auto;
+            max-width: 600px;
+            display: flex;
+            align-items: center;
+            box-shadow: 0 6px 15px rgba(0,0,0,0.1);
+        }
+
+        .search-bar input, .search-sidebar input { 
+            border: none; outline: none;
+            width: 100%;
+            background: transparent;
+            font-size: 1.1rem;
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            flex-shrink: 0;
+        }
+
+        .user-info img {
+            width: 65px;
+            height: 65px;
+            border-radius: 50%;
+            border: 4px solid white;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+
+        /* --- CARDS --- */
+        .top-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 40px;
+            margin-bottom: 50px;
+        }
+
+        .card-stat {
+            background: var(--bg-glass);
+            padding: 40px;
+            border-radius: 30px;
+            display: flex;
+            align-items: center;
+            gap: 25px;
+            box-shadow: 0 12px 30px rgba(0,0,0,0.1);
+            transition: transform 0.3s;
+        }
+
+        .card-stat:hover {
+            transform: translateY(-12px);
+        }
+
+        .card-stat i {
+            font-size: 45px;
+            color: var(--primary-blue);
+            background: white;
+            padding: 20px;
+            border-radius: 20px;
+        }
+
+        .card-stat strong {
+            font-size: 2.5rem;
+            display: block;
+            color: var(--dark-blue);
+        }
+
+        /* --- NUEVO MEDIA QUERY PARA TRASLADAR EL USUARIO AL NAV (1194px) --- */
+        @media (min-width: 1071px) and (max-width: 1194px) {
+            /* Ocultar el bloque de usuario del header */
+            header .user-info {
+                display: none;
+            }
+            /* Mostrar el bloque de usuario dentro del nav */
+            .user-info-nav {
+                display: flex;
+            }
+            /* Ajustes opcionales para el nav en este rango */
+            nav a {
+                padding: 18px 25px;
+            }
+        }
+
+        /* --- MEDIA QUERY PARA PANTALLAS MEDIANAS (con buscador visible hasta 831px) --- */
+        @media (max-width: 1070px) and (min-width: 831px) {
+            header h1 {
+                font-size: 1.5rem !important;
+                white-space: nowrap;
+            }
+            .search-bar {
+                max-width: 350px;
+                padding: 12px 20px;
+            }
+            .user-info div p:first-child {
+                font-size: 1rem;
+            }
+            .user-info div p:last-child {
+                font-size: 0.7rem;
+            }
+            .user-info img {
+                width: 50px;
+                height: 50px;
+            }
+        }
+
+        /* --- MEDIA QUERY PARA OCULTAR BUSCADOR Y MOSTRAR EN SIDEBAR (hasta 830px) --- */
+        @media (max-width: 830px) {
+            .search-bar { display: none; }
+            .search-sidebar { display: block; }
+
+            .search-sidebar .search-container-inner {
+                background: rgba(255, 255, 255, 0.2);
+                border-radius: 30px;
+                padding: 10px 20px;
+                display: flex;
+                align-items: center;
+                gap: 10px;
+                width: 100%;
+            }
+
+            .search-sidebar input {
+                color: white;
+                width: 100%;
+                min-width: 0;
+                background: transparent;
+                border: none;
+                outline: none;
+                font-size: 1rem;
+            }
+
+            .search-sidebar input::placeholder {
+                color: rgb(40, 159, 228);
+                opacity: 1;
+            }
+
+            .search-sidebar i {
+                font-size: 1.2rem;
+                flex-shrink: 0;
+                color: rgb(22, 21, 21);
+            }
+
+            nav a {
+                font-size: 1.13rem;
+                padding: 22px 30px;
+            }
+
+            header h1 {
+                font-size: 1.8rem !important;
+            }
+        }
+
+        /* --- MEDIA QUERY MÓVIL (hasta 759px) --- */
+        @media (max-width: 759px) {
+            .menu-btn, .close-menu, .search-sidebar { display: block; }
+            .search-bar { display: none; } 
+
+            nav {
+                position: fixed; left: -100%;
+                width: 100%; height: 100vh;
+                top: 0; padding-top: 100px;
+                background: url('img/background_web_.png');
+            }
+
+            nav.active { left: 0; }
+
+            .logo-section img {
+                width: 20%;
+            }
+
+            .search-sidebar .search-container-inner {
+                background: rgba(255,255,255,0.25);
+                padding: 20px;
+                border-radius: 20px;
+                display: flex;
+                align-items: center;
+                gap: 15px;
+                color: rgb(26, 25, 25);
+            }
+            .search-sidebar input { color: rgb(224, 224, 224); }
+            .search-sidebar input::placeholder {
+                color: white;
+                opacity: 1;
+            }
+
+            nav a { font-size: 1.5rem; padding: 25px; justify-content: center; }
+            main { padding: 30px; }
+            .top-cards { grid-template-columns: 1fr; }
+            .user-info span { display: none; }
+            i{
+                font-size: 2rem;
+            }
+            .close-menu{
+                font-size: 3rem;
+            }
+        }
+
+        .btn-add {
+            background: linear-gradient(90deg, var(--dark-blue), var(--primary-blue));
+            color: white; border: none;
+            padding: 20px 45px; border-radius: 20px;
+            cursor: pointer; font-weight: 700;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="overlay" id="overlay"></div>
+
+    <nav id="sidebar" class="nav">
+        <button class="close-menu" id="closeBtn">&times;</button>
+        <div class="logo-section">
+            <img src="img/nav.png" alt="" style="width: 30%;">
+        </div>
+        
+        <div class="search-sidebar">
+            <div class="search-container-inner">
+                <i class="fa-solid fa-magnifying-glass"></i>
+                <input type="text" placeholder="Buscar en menú...">
+            </div>
+        </div>
+
+        <!-- Bloque de usuario que aparecerá en el nav entre 1071px y 1194px -->
+        <div class="user-info-nav">
+            <div class="user-info-nav-content">
+                <p>Dr. Smith</p>
+                <p>Administrador</p>
+            </div>
+            <img src="img/doctor.png" alt="Doctor" class="user-info-nav-img">
+        </div>
+
+        <a href="#" class="active"><i class="fa-solid fa-chart-pie"></i> Dashboard</a>
+        <a href="#"><i class="fa-solid fa-users"></i> Pacientes</a>
+        <a href="#"><i class="fa-solid fa-calendar-check"></i> Citas</a>
+        <a href="#"><i class="fa-solid fa-file-medical"></i> Reportes</a>
+        <a href="#"><i class="fa-solid fa-sliders"></i> Ajustes</a>
+        <a href="#" class="logout"><i class="fa-solid fa-sign-out-alt"></i> Salir</a>
+    </nav>
+
+    <main>
+        <header>
+            <button class="menu-btn" id="menuToggle">
+                <i class="fa-solid fa-bars"></i>
+            </button>
+            <h1 style="font-size: 2.0rem;">Sass Medical</h1>
+            
+            <div class="search-bar">
+                <i class="fa-solid fa-magnifying-glass"></i>
+                <input type="text" placeholder="Buscar pacientes o clínicas...">
+            </div>
+
+            <div class="user-info">
+                <div style="text-align: right; margin-right: 15px;">
+                    <p style="font-weight: 700;">Dr. Smith</p>
+                    <p style="font-size: 0.8rem; opacity: 0.6;">Administrador</p>
+                </div>
+                <img src="img/doctor.png" alt="Doctor">
+            </div>
+        </header>
+
+        <section class="top-cards">
+            <div class="card-stat">
+                <i class="fa-solid fa-user-injured"></i>
+                <div><p style="opacity: 0.7;">Pacientes Totales</p><strong>1,250</strong></div>
+            </div>
+            <div class="card-stat">
+                <i class="fa-solid fa-clock"></i>
+                <div><p style="opacity: 0.7;">Citas para Hoy</p><strong>18</strong></div>
+            </div>
+        </section>
+
+        <div class="dashboard-grid" style="display: grid; grid-template-columns: 1fr; gap: 40px;">
+            <section class="panel">
+                <h3>Resumen de Actividad</h3>
+                <div style="height: 300px; border: 2px dashed rgba(44, 114, 184, 0.4); border-radius: 25px; display: flex; align-items: center; justify-content: center; color: var(--primary-blue);">
+                    <i class="fa-solid fa-chart-area" style="font-size: 4rem; margin-right: 20px;"></i>
+                    <p>Visualización de estadísticas en tiempo real</p>
+                </div>
+                <button class="btn-add">Registrar Nueva Clínica</button>
+            </section>
+        </div>
+    </main>
+
+    <script>
+        const menuToggle = document.getElementById('menuToggle');
+        const closeBtn = document.getElementById('closeBtn');
+        const sidebar = document.getElementById('sidebar');
+        const overlay = document.getElementById('overlay');
+        const body = document.body;
+
+        function toggleMenu() {
+            sidebar.classList.toggle('active');
+            overlay.classList.toggle('active');
+            body.classList.toggle('menu-open');
+        }
+
+        menuToggle.addEventListener('click', toggleMenu);
+        closeBtn.addEventListener('click', toggleMenu);
+        overlay.addEventListener('click', toggleMenu);
+
+        const navLinks = document.querySelectorAll('nav a');
+        navLinks.forEach(link => {
+            link.addEventListener('click', () => {
+                if(window.innerWidth <= 759) toggleMenu();
+            });
+        });
+    </script>
+</body>
+</html>
